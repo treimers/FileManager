@@ -52,7 +52,6 @@ public class FileTreeItem extends TreeItem<File> {
 	}
 
 	// TODO this must be done asynchronously
-	
 	private ObservableList<TreeItem<File>> buildChildren() {
 		File f = getValue();
 		if (f != null && f.isDirectory()) {
@@ -66,5 +65,10 @@ public class FileTreeItem extends TreeItem<File> {
 			}
 		}
 		return FXCollections.emptyObservableList();
+	}
+
+	@Override
+	public String toString() {
+		return getValue().getName();
 	}
 }
