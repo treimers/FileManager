@@ -19,6 +19,7 @@ public class FileTreeItem extends TreeItem<File> {
 	// From https://icons8.com/icons/set
 	private static final Image FOLDER_ICON = new Image(FileTreeItem.class.getResourceAsStream("folder.png"));
 	private static final Image FILE_ICON = new Image(FileTreeItem.class.getResourceAsStream("file.png"));
+	private static final Image HOURGLASS_ICON = new Image(FileTreeItem.class.getResourceAsStream("hourglass.png"));
 	// We cache whether the File is a leaf or not. A File is a leaf if
 	// it is not a directory and does not have any files contained within
 	// it. We cache this as isLeaf() is called often, and doing the
@@ -35,11 +36,16 @@ public class FileTreeItem extends TreeItem<File> {
 		expandedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				if (newValue != null && newValue.booleanValue())
+				if (newValue != null && newValue.booleanValue()) {
 					loadChildren(file);
-				else
+					ImageView icon = new ImageView(HOURGLASS_ICON);
+					setGraphic(icon);
+				} else {
 					getChildren().clear();
-				System.out.println("children: " + getChildren());
+					ImageView icon = new ImageView(FOLDER_ICON);
+					setGraphic(icon);
+					System.out.println("children: " + getChildren());
+				}
 			}
 		});
 	}
@@ -61,6 +67,8 @@ public class FileTreeItem extends TreeItem<File> {
 					getChildren().add(new FileTreeItem(childFile));
 				}
 			}
+			ImageView icon = new ImageView(FOLDER_ICON);
+			setGraphic(icon);
 			System.out.println("children: " + getChildren());
 		});
 	}
