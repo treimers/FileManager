@@ -90,7 +90,7 @@ public class DragDropHandler {
 				targetTreeItem.setExpanded(false);
 				targetTreeItem.setExpanded(true);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// TODO: Open a pop-up error dialog
 				e.printStackTrace();
 				success = false;
 			}
