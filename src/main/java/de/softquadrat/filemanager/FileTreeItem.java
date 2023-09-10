@@ -2,11 +2,13 @@ package de.softquadrat.filemanager;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -26,18 +28,18 @@ public class FileTreeItem extends TreeItem<File> {
 	// boolean to false so that we do not check again during this
 	// run.
 	private boolean isFirstTimeLeaf = true;
+	private CompletableFuture<File[]> completableFuture;
 
 	public FileTreeItem(File file) {
 		super(file, new ImageView(file.isDirectory() ? FOLDER_ICON : FILE_ICON));
 		expandedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				ObservableList<TreeItem<File>> children = getChildren();
 				if (newValue != null && newValue.booleanValue())
-					children.setAll(buildChildren());
+					loadChildren(file);
 				else
-					children.clear();
-				System.out.println("children: " + children);
+					getChildren().clear();
+				System.out.println("children: " + getChildren());
 			}
 		});
 	}
@@ -52,21 +54,15 @@ public class FileTreeItem extends TreeItem<File> {
 		return isLeaf;
 	}
 
-	// TODO this must be done asynchronously
-	private ObservableList<TreeItem<File>> buildChildren() {
-		File f = getValue();
-		if (f != null && f.isDirectory()) {
-			File[] files = f.listFiles();
-			Arrays.sort(files);
+	private void buildChildren(File[] files) {
+		Platform.runLater(() -> {
 			if (files != null) {
-				ObservableList<TreeItem<File>> children = FXCollections.observableArrayList();
 				for (File childFile : files) {
-					children.add(new FileTreeItem(childFile));
+					getChildren().add(new FileTreeItem(childFile));
 				}
-				return children;
 			}
-		}
-		return FXCollections.emptyObservableList();
+			System.out.println("children: " + getChildren());
+		});
 	}
 
 	@Override
@@ -82,5 +78,30 @@ public class FileTreeItem extends TreeItem<File> {
 	public void refresh() {
 		setExpanded(false);
 		setExpanded(true);
+	}
+
+	private void loadChildren(File file) {
+		Supplier<File[]> supplier = new Supplier<File[]>() {
+			@Override
+			public File[] get() {
+				File[] retval = new File[0];
+				if (file != null && file.isDirectory()) {
+					retval = file.listFiles();
+					if (retval == null)
+						retval = new File[0];
+					else
+						Arrays.sort(retval);
+				}
+				return retval;
+			}
+		};
+		completableFuture = CompletableFuture.supplyAsync(supplier);
+		Consumer<? super File[]> consumer = new Consumer<>() {
+			@Override
+			public void accept(File[] files) {
+				buildChildren(files);
+			}
+		};
+		completableFuture.thenAccept(consumer);
 	}
 }
