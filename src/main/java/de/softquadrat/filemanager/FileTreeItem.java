@@ -1,6 +1,7 @@
 package de.softquadrat.filemanager;
 
 import java.io.File;
+import java.util.Arrays;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,7 +16,7 @@ import javafx.scene.image.ImageView;
 public class FileTreeItem extends TreeItem<File> {
 	// From https://icons8.com/icons/set
 	private static final Image FOLDER_ICON = new Image(FileTreeItem.class.getResourceAsStream("folder.png"));
-	private static final Image FILE_ICON =  new Image(FileTreeItem.class.getResourceAsStream("file.png"));
+	private static final Image FILE_ICON = new Image(FileTreeItem.class.getResourceAsStream("file.png"));
 	// We cache whether the File is a leaf or not. A File is a leaf if
 	// it is not a directory and does not have any files contained within
 	// it. We cache this as isLeaf() is called often, and doing the
@@ -56,6 +57,7 @@ public class FileTreeItem extends TreeItem<File> {
 		File f = getValue();
 		if (f != null && f.isDirectory()) {
 			File[] files = f.listFiles();
+			Arrays.sort(files);
 			if (files != null) {
 				ObservableList<TreeItem<File>> children = FXCollections.observableArrayList();
 				for (File childFile : files) {
@@ -70,5 +72,10 @@ public class FileTreeItem extends TreeItem<File> {
 	@Override
 	public String toString() {
 		return getValue().getName();
+	}
+
+	public void refresh() {
+		setExpanded(false);
+		setExpanded(true);
 	}
 }

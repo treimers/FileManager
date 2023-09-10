@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import javafx.scene.control.TreeItem;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
@@ -22,7 +21,7 @@ public class DragDropHandler {
 	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
 
 	public void handleDragDetected(MouseEvent event, FileTreeCell sourceTreeCell) {
-		TreeItem<File> sourceTreeItem = sourceTreeCell.getTreeItem();
+		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
 		// Do not allow moving root
 		if (sourceTreeItem.getParent() == null)
 			return;
@@ -37,8 +36,9 @@ public class DragDropHandler {
 	public void handleDragOver(DragEvent event, FileTreeCell targetTreeCell) {
 		if (!event.getDragboard().hasContent(JAVA_FORMAT))
 			return;
-		TreeItem<File> sourceTreeItem = ((FileTreeCell) event.getGestureSource()).getTreeItem();
-		TreeItem<File> targetTreeItem = targetTreeCell.getTreeItem();
+		FileTreeCell sourceTreeCell = (FileTreeCell) event.getGestureSource();
+		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
+		FileTreeItem targetTreeItem = (FileTreeItem) targetTreeCell.getTreeItem();
 		if (dropAllowed(sourceTreeItem, targetTreeItem))
 			event.acceptTransferModes(TransferMode.MOVE);
 		event.consume();
@@ -47,8 +47,9 @@ public class DragDropHandler {
 	public void handleOnDragEntered(DragEvent event, FileTreeCell targetTreeCell) {
 		if (!event.getDragboard().hasContent(JAVA_FORMAT))
 			return;
-		TreeItem<File> sourceTreeItem = ((FileTreeCell) event.getGestureSource()).getTreeItem();
-		TreeItem<File> targetTreeItem = targetTreeCell.getTreeItem();
+		FileTreeCell sourceTreeCell = (FileTreeCell) event.getGestureSource();
+		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
+		FileTreeItem targetTreeItem = (FileTreeItem) targetTreeCell.getTreeItem();
 		if (dropAllowed(sourceTreeItem, targetTreeItem))
 			targetTreeCell.setStyle(DROP_HINT_STYLE);
 		event.consume();
@@ -61,9 +62,10 @@ public class DragDropHandler {
 
 	public void handleDragDropped(DragEvent event, FileTreeCell targetTreeCell) {
 		Dragboard db = event.getDragboard();
-		TreeItem<File> sourceTreeItem = ((FileTreeCell) event.getGestureSource()).getTreeItem();
-		TreeItem<File> sourceParent = sourceTreeItem.getParent();
-		TreeItem<File> targetTreeItem = targetTreeCell.getTreeItem();
+		FileTreeCell sourceTreeCell = (FileTreeCell) event.getGestureSource();
+		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
+		FileTreeItem sourceParent = (FileTreeItem) sourceTreeItem.getParent();
+		FileTreeItem targetTreeItem = (FileTreeItem) targetTreeCell.getTreeItem();
 		boolean success = db.hasContent(JAVA_FORMAT) && sourceParent != null;
 		if (success) {
 			File targetDir = targetTreeItem.getValue();
@@ -87,7 +89,7 @@ public class DragDropHandler {
 		event.consume();
 	}
 
-	private boolean dropAllowed(TreeItem<File> sourceTreeItem, TreeItem<File> targetTreeItem) {
+	private boolean dropAllowed(FileTreeItem sourceTreeItem, FileTreeItem targetTreeItem) {
 		return sourceTreeItem != null && targetTreeItem != null && targetTreeItem != sourceTreeItem
 				&& sourceTreeItem.getParent() != targetTreeItem && !targetTreeItem.isLeaf();
 	}

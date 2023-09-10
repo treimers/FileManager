@@ -15,7 +15,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
 
 public class FileTreeCell extends TreeCell<File> {
 	private static int counter = 1;
@@ -56,11 +55,10 @@ public class FileTreeCell extends TreeCell<File> {
 			refresh.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
-					TreeItem<File> treeItem = getTreeItem();
+					FileTreeItem treeItem = (FileTreeItem) getTreeItem();
 					// Avoid NullPointerException!
 					if (treeItem != null && treeItem.isExpanded()) {
-						treeItem.setExpanded(false);
-						treeItem.setExpanded(true);
+						treeItem.refresh();
 					}
 				}
 			});
@@ -77,7 +75,7 @@ public class FileTreeCell extends TreeCell<File> {
 			newFile.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
-					TreeItem<File> treeItem = getTreeItem();
+					FileTreeItem treeItem = (FileTreeItem) getTreeItem();
 					File dir = treeItem.getValue();
 					if (!dir.isDirectory())
 						return;
@@ -119,7 +117,7 @@ public class FileTreeCell extends TreeCell<File> {
 			newDir.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
-					TreeItem<File> treeItem = getTreeItem();
+					FileTreeItem treeItem = (FileTreeItem) getTreeItem();
 					File dir = treeItem.getValue();
 					if (!dir.isDirectory())
 						return;
@@ -162,7 +160,7 @@ public class FileTreeCell extends TreeCell<File> {
 		deleteFile.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				TreeItem<File> treeItem = getTreeItem();
+				FileTreeItem treeItem = (FileTreeItem) getTreeItem();
 				File file = treeItem.getValue();
 				Alert alert = new Alert(AlertType.CONFIRMATION);
 				alert.setTitle("Delete File");
@@ -178,7 +176,7 @@ public class FileTreeCell extends TreeCell<File> {
 						error.setContentText("Sorry, deletion failed! Maybe non-empty directory?");
 						error.showAndWait();
 					} else {
-						TreeItem<File> parent = treeItem.getParent();
+						FileTreeItem parent = (FileTreeItem) treeItem.getParent();
 						parent.getChildren().remove(treeItem);
 					}
 				}
