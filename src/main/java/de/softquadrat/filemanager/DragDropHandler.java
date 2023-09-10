@@ -19,7 +19,7 @@ import javafx.scene.input.TransferMode;
 // https://brianyoung.blog/2018/08/23/javafx-treeview-drag-drop/
 public class DragDropHandler {
 	private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
-	private static final String DROP_HINT_STYLE = "-fx-border-color: #eea82f; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
+	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
 
 	public void handleDragDetected(MouseEvent event, FileTreeCell sourceTreeCell) {
 		// System.out.println("handleDragDetected - sourceTreeCell: " + sourceTreeCell);
