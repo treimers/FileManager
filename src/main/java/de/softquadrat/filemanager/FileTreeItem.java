@@ -61,12 +61,16 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Co
 	}
 
 	private void buildChildren(File[] files) {
+		// avoid NullPointerException
+		if (files == null)
+			files = new File[0];
+		// create FileTreeItem container for all files (outside JavaFX thread)
+		FileTreeItem[] treeItems = new FileTreeItem[files.length];
+		for (int i = 0; i < files.length; i++)
+			treeItems[i] = new FileTreeItem(files[i]);
+		// add all FileTreeItem children to this FileTreeItem (in JavaFX thread)
 		Platform.runLater(() -> {
-			if (files != null) {
-				for (File childFile : files) {
-					getChildren().add(new FileTreeItem(childFile));
-				}
-			}
+			getChildren().addAll(treeItems);
 			ImageView icon = new ImageView(FOLDER_ICON);
 			setGraphic(icon);
 			System.out.println("children: " + getChildren());
