@@ -15,7 +15,7 @@ import javafx.scene.image.ImageView;
 
 // From Java Doc: https://docs.oracle.com/javafx/2/api/javafx/scene/control/TreeItem.html
 
-public class FileTreeItem extends TreeItem<File> {
+public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Consumer<File[]> {
 	// From https://icons8.com/icons/set
 	private static final Image FOLDER_ICON = new Image(FileTreeItem.class.getResourceAsStream("folder.png"));
 	private static final Image FILE_ICON = new Image(FileTreeItem.class.getResourceAsStream("file.png"));
@@ -89,27 +89,28 @@ public class FileTreeItem extends TreeItem<File> {
 	}
 
 	private void loadChildren(File file) {
-		Supplier<File[]> supplier = new Supplier<File[]>() {
-			@Override
-			public File[] get() {
-				File[] retval = new File[0];
-				if (file != null && file.isDirectory()) {
-					retval = file.listFiles();
-					if (retval == null)
-						retval = new File[0];
-					else
-						Arrays.sort(retval);
-				}
-				return retval;
-			}
-		};
-		completableFuture = CompletableFuture.supplyAsync(supplier);
-		Consumer<? super File[]> consumer = new Consumer<>() {
-			@Override
-			public void accept(File[] files) {
-				buildChildren(files);
-			}
-		};
-		completableFuture.thenAccept(consumer);
+		completableFuture = CompletableFuture.supplyAsync(this);
+		completableFuture.thenAccept(this);
+	}
+
+	// Supplier method (will be called to start loading children)
+	@Override
+	public File[] get() {
+		File[] retval = new File[0];
+		File file = getValue();
+		if (file != null && file.isDirectory()) {
+			retval = file.listFiles();
+			if (retval == null)
+				retval = new File[0];
+			else
+				Arrays.sort(retval);
+		}
+		return retval;
+	}
+
+	// Consumer method (will be called when loading children completed)
+	@Override
+	public void accept(File[] files) {
+		buildChildren(files);
 	}
 }
