@@ -41,9 +41,7 @@ public class DragDropHandler {
 			return;
 		TreeItem<File> sourceTreeItem = ((FileTreeCell) event.getGestureSource()).getTreeItem();
 		TreeItem<File> targetTreeItem = targetTreeCell.getTreeItem();
-		// can't drop on itself or on same parent and can drop to folders only
-		if (sourceTreeItem != null && targetTreeItem != null && targetTreeItem != sourceTreeItem
-				&& sourceTreeItem.getParent() != targetTreeItem && !targetTreeItem.isLeaf())
+		if (dropAllowed(sourceTreeItem, targetTreeItem))
 			event.acceptTransferModes(TransferMode.MOVE);
 		event.consume();
 	}
@@ -55,9 +53,7 @@ public class DragDropHandler {
 			return;
 		TreeItem<File> sourceTreeItem = ((FileTreeCell) event.getGestureSource()).getTreeItem();
 		TreeItem<File> targetTreeItem = targetTreeCell.getTreeItem();
-		// can't drop on itself or on same parent and can drop to folders only
-		if (sourceTreeItem != null && targetTreeItem != null && targetTreeItem != sourceTreeItem
-				&& sourceTreeItem.getParent() != targetTreeItem && !targetTreeItem.isLeaf())
+		if (dropAllowed(sourceTreeItem, targetTreeItem))
 			targetTreeCell.setStyle(DROP_HINT_STYLE);
 		event.consume();
 	}
@@ -97,5 +93,10 @@ public class DragDropHandler {
 		}
 		event.setDropCompleted(success);
 		event.consume();
+	}
+
+	private boolean dropAllowed(TreeItem<File> sourceTreeItem, TreeItem<File> targetTreeItem) {
+		return sourceTreeItem != null && targetTreeItem != null && targetTreeItem != sourceTreeItem
+				&& sourceTreeItem.getParent() != targetTreeItem && !targetTreeItem.isLeaf();
 	}
 }
