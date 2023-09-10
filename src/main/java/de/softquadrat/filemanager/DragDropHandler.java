@@ -41,7 +41,6 @@ public class DragDropHandler {
 			return;
 		TreeItem<File> sourceTreeItem = ((FileTreeCell) event.getGestureSource()).getTreeItem();
 		TreeItem<File> targetTreeItem = targetTreeCell.getTreeItem();
-		System.out.println(sourceTreeItem.getParent() + " " + targetTreeItem);
 		// can't drop on itself or on same parent and can drop to folders only
 		if (sourceTreeItem != null && targetTreeItem != null && targetTreeItem != sourceTreeItem
 				&& sourceTreeItem.getParent() != targetTreeItem && !targetTreeItem.isLeaf())

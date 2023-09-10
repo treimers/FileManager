@@ -36,7 +36,7 @@ public class FileTreeItem extends TreeItem<File> {
 					children.setAll(buildChildren());
 				else
 					children.clear();
-				System.out.println(children);
+				System.out.println("children: " + children);
 			}
 		});
 	}
