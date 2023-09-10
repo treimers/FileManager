@@ -74,6 +74,11 @@ public class FileTreeItem extends TreeItem<File> {
 		return getValue().getName();
 	}
 
+	/*
+	 * Called from
+	 * - context menu "refresh"
+	 * - drag and drop operation
+	 */
 	public void refresh() {
 		setExpanded(false);
 		setExpanded(true);

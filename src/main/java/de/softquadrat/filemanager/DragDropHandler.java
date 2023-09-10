@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
@@ -75,13 +77,14 @@ public class DragDropHandler {
 				Files.move(sourceFile.toPath(), Paths.get(targetDir.getPath(), sourceFile.getName()),
 						StandardCopyOption.ATOMIC_MOVE);
 				// refresh source & target dir
-				sourceParent.setExpanded(false);
-				sourceParent.setExpanded(true);
-				targetTreeItem.setExpanded(false);
-				targetTreeItem.setExpanded(true);
+				sourceParent.refresh();
+				targetTreeItem.refresh();
 			} catch (IOException e) {
-				// TODO: Open a pop-up error dialog
-				e.printStackTrace();
+				Alert error = new Alert(AlertType.ERROR);
+				error.setTitle("Error");
+				error.setHeaderText("Error moving File: " + sourceFile.getName());
+				error.setContentText("Sorry, failed to move file: " + e.getMessage());
+				error.showAndWait();
 				success = false;
 			}
 		}
@@ -89,6 +92,7 @@ public class DragDropHandler {
 		event.consume();
 	}
 
+	// TODO: we must disallow dragging a folder to a sub folder
 	private boolean dropAllowed(FileTreeItem sourceTreeItem, FileTreeItem targetTreeItem) {
 		return sourceTreeItem != null && targetTreeItem != null && targetTreeItem != sourceTreeItem
 				&& sourceTreeItem.getParent() != targetTreeItem && !targetTreeItem.isLeaf();
