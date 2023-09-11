@@ -2,6 +2,7 @@ package de.softquadrat.filemanager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Optional;
 
 import javafx.collections.ObservableList;
@@ -15,6 +16,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 
@@ -102,7 +104,9 @@ public class FileTreeCell extends TreeCell<File> {
 						} else {
 							file.createNewFile();
 							FileTreeItem newTreeItem = new FileTreeItem(file);
-							treeItem.getChildren().add(newTreeItem);
+							ObservableList<TreeItem<File>> children = treeItem.getChildren();
+							children.add(newTreeItem);
+							children.sort(Util.COMPARATOR);
 						}
 						treeItem.setExpanded(true);
 					} catch (IOException e) {
@@ -150,7 +154,9 @@ public class FileTreeCell extends TreeCell<File> {
 							error.showAndWait();
 						} else {
 							FileTreeItem newTreeItem = new FileTreeItem(file);
-							treeItem.getChildren().add(newTreeItem);
+							ObservableList<TreeItem<File>> children = treeItem.getChildren();
+							children.add(newTreeItem);
+							children.sort(Util.COMPARATOR);
 						}
 					}
 					treeItem.setExpanded(true);

@@ -89,6 +89,7 @@ public class DragDropHandler {
 				// refresh source & target dir
 				sourceParent.refresh();
 				targetTreeItem.refresh();
+				targetTreeItem.getChildren().sort(Util.COMPARATOR);
 			} catch (IOException e) {
 				Alert error = new Alert(AlertType.ERROR);
 				error.setTitle("Error");
