@@ -21,8 +21,11 @@ import javafx.scene.input.TransferMode;
 public class DragDropHandler {
 	private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
 	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
+	// private PauseTransition pauseTransition = new
+	// PauseTransition(Duration.millis(1000));
 
 	public void handleDragDetected(MouseEvent event, FileTreeCell sourceTreeCell) {
+		System.out.println("handleDragDetected: " + sourceTreeCell);
 		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
 		// Do not allow moving root
 		if (sourceTreeItem.getParent() == null)
@@ -52,13 +55,20 @@ public class DragDropHandler {
 		FileTreeCell sourceTreeCell = (FileTreeCell) event.getGestureSource();
 		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
 		FileTreeItem targetTreeItem = (FileTreeItem) targetTreeCell.getTreeItem();
-		if (dropAllowed(sourceTreeItem, targetTreeItem))
+		if (dropAllowed(sourceTreeItem, targetTreeItem)) {
 			targetTreeCell.setStyle(DROP_HINT_STYLE);
+			// pauseTransition.setOnFinished((ActionEvent e) -> {
+			// targetTreeItem.setExpanded(true);
+			// });
+			// pauseTransition.playFromStart();
+		}
 		event.consume();
 	}
 
 	public void handleOnDragExited(DragEvent event, FileTreeCell targetTreeCell) {
 		targetTreeCell.setStyle("");
+		// if (pauseTransition.getStatus() == Status.RUNNING)
+		// pauseTransition.stop();
 		event.consume();
 	}
 
@@ -92,9 +102,21 @@ public class DragDropHandler {
 		event.consume();
 	}
 
-	// TODO: we must disallow dragging a folder to a sub folder
+	/**
+	 * The following situations will be rejected:
+	 * - the source tree item is null
+	 * - the target tree item is null
+	 * - the source tree item and the target tree item are the same
+	 * - the source tree item is already child of the target tree item
+	 * - the target tree item is a leaf (and cannot contain children)
+	 * - the source tree item is ancestor of the target tree item
+	 */
 	private boolean dropAllowed(FileTreeItem sourceTreeItem, FileTreeItem targetTreeItem) {
-		return sourceTreeItem != null && targetTreeItem != null && targetTreeItem != sourceTreeItem
-				&& sourceTreeItem.getParent() != targetTreeItem && !targetTreeItem.isLeaf();
+		return sourceTreeItem != null
+				&& targetTreeItem != null
+				&& targetTreeItem != sourceTreeItem
+				&& sourceTreeItem.getParent() != targetTreeItem
+				&& !targetTreeItem.isLeaf()
+				&& !sourceTreeItem.isAncestor(targetTreeItem);
 	}
 }

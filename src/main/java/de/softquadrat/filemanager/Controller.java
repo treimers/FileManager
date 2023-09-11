@@ -20,8 +20,6 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -50,13 +48,7 @@ public class Controller implements Initializable {
 		treeView.setCellFactory(new Callback<TreeView<File>, TreeCell<File>>() {
 			@Override
 			public TreeCell<File> call(TreeView<File> param) {
-				FileTreeCell cell = new FileTreeCell();
-				cell.setOnDragDetected((MouseEvent event) -> dragHandler.handleDragDetected(event, cell));
-				cell.setOnDragOver((DragEvent event) -> dragHandler.handleDragOver(event, cell));
-				cell.setOnDragEntered((DragEvent event) -> dragHandler.handleOnDragEntered(event, cell));
-				cell.setOnDragExited((DragEvent event) -> dragHandler.handleOnDragExited(event, cell));
-				cell.setOnDragDropped((DragEvent event) -> dragHandler.handleDragDropped(event, cell));
-				return cell;
+				return new FileTreeCell(dragHandler);
 			}
 		});
 		treeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<File>>() {

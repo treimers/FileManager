@@ -15,12 +15,16 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
 
 public class FileTreeCell extends TreeCell<File> {
-	private static int counter = 1;
-
-	public FileTreeCell() {
-		System.out.println(counter++);
+	public FileTreeCell(DragDropHandler dragHandler) {
+		setOnDragDetected((MouseEvent event) -> dragHandler.handleDragDetected(event, this));
+		setOnDragOver((DragEvent event) -> dragHandler.handleDragOver(event, this));
+		setOnDragEntered((DragEvent event) -> dragHandler.handleOnDragEntered(event, this));
+		setOnDragExited((DragEvent event) -> dragHandler.handleOnDragExited(event, this));
+		setOnDragDropped((DragEvent event) -> dragHandler.handleDragDropped(event, this));
 	}
 
 	@Override
@@ -50,7 +54,8 @@ public class FileTreeCell extends TreeCell<File> {
 			 */
 			MenuItem refresh = new MenuItem("Refresh");
 			menuItems.add(refresh);
-			// We simply close and reopen the folder tree item which will empty the children list.
+			// We simply close and reopen the folder tree item which will empty the children
+			// list.
 			// But only if it was already open before refresh.
 			refresh.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
