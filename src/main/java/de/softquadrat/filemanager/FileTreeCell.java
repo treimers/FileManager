@@ -2,7 +2,6 @@ package de.softquadrat.filemanager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.Optional;
 
 import javafx.collections.ObservableList;
@@ -36,12 +35,11 @@ public class FileTreeCell extends TreeCell<File> {
 			setText(null);
 			setGraphic(null);
 		} else {
-			File item = getItem();
-			if (item == null) {
+			if (file == null) {
 				setText("");
 			} else {
-				setText(item.getName());
-				setContextMenu(createContextMenu(item));
+				setText(file.getName());
+				setContextMenu(createContextMenu(file));
 			}
 			setGraphic(getTreeItem().getGraphic());
 		}

@@ -35,7 +35,7 @@ public class Controller implements Initializable {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		dragHandler = new DragDropHandler();
+		dragHandler = new DragDropHandler(treeView);
 		TableColumn<FileInfo, String> name = new TableColumn<>("Name");
 		name.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("name"));
 		tableView.getColumns().add(name);

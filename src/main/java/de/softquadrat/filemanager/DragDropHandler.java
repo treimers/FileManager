@@ -6,8 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
@@ -21,11 +24,13 @@ import javafx.scene.input.TransferMode;
 public class DragDropHandler {
 	private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
 	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
-	// private PauseTransition pauseTransition = new
-	// PauseTransition(Duration.millis(1000));
+	private TreeView<File> treeView;
+
+	public DragDropHandler(TreeView<File> treeView) {
+		this.treeView = treeView;
+	}
 
 	public void handleDragDetected(MouseEvent event, FileTreeCell sourceTreeCell) {
-		System.out.println("handleDragDetected: " + sourceTreeCell);
 		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
 		// Do not allow moving root
 		if (sourceTreeItem.getParent() == null)
@@ -57,18 +62,12 @@ public class DragDropHandler {
 		FileTreeItem targetTreeItem = (FileTreeItem) targetTreeCell.getTreeItem();
 		if (dropAllowed(sourceTreeItem, targetTreeItem)) {
 			targetTreeCell.setStyle(DROP_HINT_STYLE);
-			// pauseTransition.setOnFinished((ActionEvent e) -> {
-			// targetTreeItem.setExpanded(true);
-			// });
-			// pauseTransition.playFromStart();
 		}
 		event.consume();
 	}
 
 	public void handleOnDragExited(DragEvent event, FileTreeCell targetTreeCell) {
 		targetTreeCell.setStyle("");
-		// if (pauseTransition.getStatus() == Status.RUNNING)
-		// pauseTransition.stop();
 		event.consume();
 	}
 
@@ -84,12 +83,32 @@ public class DragDropHandler {
 			File sourceFile = sourceTreeItem.getValue();
 			try {
 				System.out.println("Moving " + sourceFile + " to directory " + targetDir);
-				Files.move(sourceFile.toPath(), Paths.get(targetDir.getPath(), sourceFile.getName()),
-						StandardCopyOption.ATOMIC_MOVE);
-				// refresh source & target dir
-				sourceParent.refresh();
-				targetTreeItem.refresh();
-				targetTreeItem.getChildren().sort(Util.COMPARATOR);
+				File newTargetFile = new File(targetDir, sourceFile.getName());
+				if (newTargetFile.exists()) {
+					Alert error = new Alert(AlertType.ERROR);
+					error.setTitle("Error");
+					error.setHeaderText("Error moving File: " + sourceFile.getName());
+					error.setContentText("Sorry, file already exists in target");
+					error.showAndWait();
+					success = false;
+				} else {
+					Files.move(sourceFile.toPath(), Paths.get(targetDir.getPath(), sourceFile.getName()),
+							StandardCopyOption.ATOMIC_MOVE);
+					// remove item from source parent
+					sourceParent.getChildren().remove(sourceTreeItem);
+					// add item to target item, if target item is expanded
+					// otherwise expand target item
+					if (targetTreeItem.isExpanded()) {
+						FileTreeItem newTargetTreeItem = new FileTreeItem(newTargetFile);
+						ObservableList<TreeItem<File>> children = targetTreeItem.getChildren();
+						children.add(newTargetTreeItem);
+						children.sort(Util.COMPARATOR);
+						treeView.getSelectionModel().select(newTargetTreeItem);
+					} else {
+						targetTreeItem.setExpanded(true);
+						treeView.getSelectionModel().select(targetTreeItem);
+					}
+				}
 			} catch (IOException e) {
 				Alert error = new Alert(AlertType.ERROR);
 				error.setTitle("Error");
