@@ -1,15 +1,23 @@
 package net.treimers.filemanager;
 
+import java.io.InputStream;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class FileManager extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("File Manager");
+		InputStream resource = FileManager.class.getResourceAsStream("filemanager.png");
+		if (resource != null) {
+			Image icon = new Image(resource);
+			primaryStage.getIcons().add(icon);
+		}
 		// load the view
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("main.fxml"));
 		Parent root = loader.load();
