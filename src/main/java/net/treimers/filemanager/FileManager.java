@@ -13,7 +13,7 @@ public class FileManager extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("File Manager");
-		InputStream resource = FileManager.class.getResourceAsStream("filemanager.png");
+		InputStream resource = FileManager.class.getResourceAsStream("FileManager.png");
 		if (resource != null) {
 			Image icon = new Image(resource);
 			primaryStage.getIcons().add(icon);

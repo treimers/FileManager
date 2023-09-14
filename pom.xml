@@ -6,7 +6,7 @@
 	<artifactId>filemanager</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0</version>
-	<name>filemanager</name>
+	<name>FileManager</name>
 	<organization>
 		<name>Thorsten Reimers</name>
 	</organization>
@@ -87,7 +87,7 @@
 							<customizedJre>false</customizedJre>
 							<macConfig>
 								<backgroundImage>src/main/deploy/package/mac/background.png</backgroundImage>
-								<volumeIcon>src/main/deploy/package/mac/filemanager-volume.icns</volumeIcon>
+								<volumeIcon>src/main/deploy/package/mac/FileManager-volume.icns</volumeIcon>
 								<textSize>12</textSize>
 								<iconX>120</iconX>
 								<iconY>135</iconY>
