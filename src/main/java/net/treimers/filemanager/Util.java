@@ -1,4 +1,4 @@
-package de.softquadrat.filemanager;
+package net.treimers.filemanager;
 
 import java.io.File;
 import java.util.Comparator;

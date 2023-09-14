@@ -2,7 +2,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.softquadrat.filemanager</groupId>
+	<groupId>net.treimers.filemanager</groupId>
 	<artifactId>filemanager</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0</version>
@@ -68,7 +68,7 @@
 							<goal>package</goal>
 						</goals>
 						<configuration>
-							<mainClass>de.softquadrat.filemanager.Launcher</mainClass>
+							<mainClass>net.treimers.filemanager.Launcher</mainClass>
 							<manifest>
 								<additionalEntries>
 									<Created-By>Thorsten Reimers</Created-By>
@@ -86,7 +86,7 @@
 							<outputDirectory>${project.build.directory}/deploy/${os.detected.name}</outputDirectory>
 							<customizedJre>false</customizedJre>
 							<macConfig>
-								<backgroundImage>src/main/deploy/package/mac/filemanager-background.png</backgroundImage>
+								<backgroundImage>src/main/deploy/package/mac/background.png</backgroundImage>
 								<volumeIcon>src/main/deploy/package/mac/filemanager-volume.icns</volumeIcon>
 								<textSize>12</textSize>
 								<iconX>120</iconX>

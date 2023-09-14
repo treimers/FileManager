@@ -37,9 +37,9 @@ sips -s format png ${name}.png -z 64 64 --out ${name}_64x64.png
 sips -s format png ${name}.png -z 128 128 --out ${name}_128x128.png
 sips -s format png ${name}.png -z 256 256 --out ${name}_256x256.png
 
-cp $name.png ../linux
-cp background.png ../mac/$name-background.png
-cp $name.icns ../mac
-cp $name.icns ../mac/$name-volume.icns
-cp $name.bmp ../windows/$name-setup.bmp
-cp $name.ico ../windows
+cp ${name}.png ../linux
+cp background.png ../mac
+cp ${name}.icns ../mac
+cp ${name}.icns ../mac/${name}-volume.icns
+cp ${name}.bmp ../windows/${name}-setup.bmp
+cp ${name}.ico ../windows

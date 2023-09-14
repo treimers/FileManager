@@ -1,4 +1,4 @@
-package de.softquadrat.filemanager;
+package net.treimers.filemanager;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
