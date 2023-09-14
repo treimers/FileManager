@@ -8,7 +8,7 @@
 	<version>1.0</version>
 	<name>filemanager</name>
 	<organization>
-		<name>SoftQuadrat GmbH</name>
+		<name>Thorsten Reimers</name>
 	</organization>
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -71,7 +71,7 @@
 							<mainClass>de.softquadrat.filemanager.Launcher</mainClass>
 							<manifest>
 								<additionalEntries>
-									<Created-By>SoftQuadrat GmbH</Created-By>
+									<Created-By>Thorsten Reimers</Created-By>
 									<Implementation-Title>${name}</Implementation-Title>
 									<Implementation-Version>${project.version}</Implementation-Version>
 									<Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
@@ -81,9 +81,28 @@
 							<generateInstaller>true</generateInstaller>
 							<administratorRequired>false</administratorRequired>
 							<platform>auto</platform>
+							<assetsDir>src/main/deploy/package</assetsDir>
 							<organizationName>${project.organization.name}</organizationName>
 							<outputDirectory>${project.build.directory}/deploy/${os.detected.name}</outputDirectory>
 							<customizedJre>false</customizedJre>
+							<macConfig>
+								<backgroundImage>src/main/deploy/package/mac/filemanager-background.png</backgroundImage>
+								<volumeIcon>src/main/deploy/package/mac/filemanager-volume.icns</volumeIcon>
+								<textSize>12</textSize>
+								<iconX>120</iconX>
+								<iconY>135</iconY>
+								<appsLinkIconX>400</appsLinkIconX>
+								<appsLinkIconY>135</appsLinkIconY>
+								<windowWidth>517</windowWidth>
+								<windowHeight>270</windowHeight>
+							</macConfig>
+							<winConfig>
+								<companyName>Thorsten Reimers</companyName>
+								<createDesktopIconTask>true</createDesktopIconTask>
+								<fileDescription>filemanager</fileDescription>
+								<wrapJar>false</wrapJar>
+								<createDesktopIconTask>true</createDesktopIconTask>
+							</winConfig>
 						</configuration>
 					</execution>
 				</executions>
