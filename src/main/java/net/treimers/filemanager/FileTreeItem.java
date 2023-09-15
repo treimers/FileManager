@@ -3,7 +3,7 @@ package net.treimers.filemanager;
 import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import javafx.animation.Animation;
@@ -13,15 +13,13 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
 // From Java Doc: https://docs.oracle.com/javafx/2/api/javafx/scene/control/TreeItem.html
-public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Consumer<File[]> {
+public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, BiConsumer<File[], Throwable> {
 	// From https://icons8.com/icons/set
 	private static final Image FOLDER_ICON = new Image(FileTreeItem.class.getResourceAsStream("folder.png"));
 	private static final Image FILE_ICON = new Image(FileTreeItem.class.getResourceAsStream("file.png"));
@@ -34,7 +32,7 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Co
 	// we do not check again during this run.
 	private boolean isFirstTimeLeaf = true;
 	private CompletableFuture<File[]> completableFuture;
-	Timeline timeLine;
+	private Timeline timeLine;
 
 	public FileTreeItem(File file) {
 		super(file, new ImageView(file.isDirectory() ? FOLDER_ICON : FILE_ICON));
@@ -44,11 +42,9 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Co
 				if (newValue != null && newValue.booleanValue()) {
 					applyGraphic(HOURGLASS_ICON, true);
 					completableFuture = CompletableFuture.supplyAsync(FileTreeItem.this);
-					completableFuture.thenAccept(FileTreeItem.this);
-				} else {
+					completableFuture.whenComplete(FileTreeItem.this);
+				} else
 					getChildren().clear();
-					stopAnimation();
-				}
 			}
 		});
 	}
@@ -73,48 +69,64 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Co
 		setExpanded(true);
 	}
 
-	// Supplier method (will be called to start loading children)
+	/**
+	 * Loads the children of a directory.
+	 * 
+	 * The method implements the Supplier interface and is invoked asynchronously.
+	 * 
+	 * Any RunTimeExceptions and Errors thrown inside this method will be forwarded
+	 * to the BiConsumer method.
+	 */
 	@Override
 	public File[] get() {
-		try {
-			File[] retval = new File[0];
-			File file = getValue();
-			if (file != null && file.isDirectory()) {
-				retval = file.listFiles();
-				if (retval == null)
-					retval = new File[0];
-				else
-					Arrays.sort(retval);
-			}
-			return retval;
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-			throw e;
+		File[] retval = new File[0];
+		File file = getValue();
+		if (file != null && file.isDirectory()) {
+			retval = file.listFiles();
+			if (retval == null)
+				retval = new File[0];
+			else
+				Arrays.sort(retval);
 		}
+		return retval;
 	}
 
-	// Consumer method (will be called when loading children completed)
+	/**
+	 * Handles the result after loading the children of a directory.
+	 * 
+	 * The method implements the BiConsumer interface.
+	 * 
+	 * @param files     the loaded children of a directory.
+	 * @param throwable any Throwable thrown during the load operation or null if
+	 *                  load was successful.
+	 */
 	@Override
-	public void accept(File[] files) {
-		try {
-			// avoid NullPointerException
-			if (files == null)
-				files = new File[0];
-			// create FileTreeItem container for all files (outside JavaFX thread)
-			FileTreeItem[] treeItems = new FileTreeItem[files.length];
-			for (int i = 0; i < files.length; i++)
-				treeItems[i] = new FileTreeItem(files[i]);
-			// add all children to this item (in JavaFX thread)
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					getChildren().setAll(treeItems);
-					stopAnimation();
-				}
-			});
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-			throw e;
+	public void accept(File[] files, Throwable throwable) {
+		if (throwable != null) {
+			throwable.printStackTrace();
+			resetFolderIcon();
+		} else {
+			try {
+				// avoid NullPointerException
+				if (files == null)
+					files = new File[0];
+				// create FileTreeItem container for all files (outside JavaFX thread)
+				FileTreeItem[] treeItems = new FileTreeItem[files.length];
+				for (int i = 0; i < files.length; i++)
+					treeItems[i] = new FileTreeItem(files[i]);
+				// add all children to this item (in JavaFX thread)
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						getChildren().setAll(treeItems);
+						resetFolderIcon();
+					}
+
+				});
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+				throw e;
+			}
 		}
 	}
 
@@ -148,16 +160,10 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Co
 					new KeyFrame(Duration.seconds(1), new KeyValue(icon.rotateProperty(), 360)));
 			timeLine.setCycleCount(Animation.INDEFINITE);
 			timeLine.play();
-			timeLine.setOnFinished(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event) {
-					stopAnimation();
-				}
-			});
 		}
 	}
 
-	private void stopAnimation() {
+	private void resetFolderIcon() {
 		timeLine.stop();
 		applyGraphic(FOLDER_ICON);
 	}
