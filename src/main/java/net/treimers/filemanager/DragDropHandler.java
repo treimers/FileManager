@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import javafx.animation.PauseTransition;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TreeItem;
@@ -17,6 +19,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.util.Duration;
 
 // https://docs.oracle.com/javase/8/javafx/api/index.html?javafx/scene/control/package-summary.html
 // https://docs.oracle.com/javafx/2/drag_drop/jfxpub-drag_drop.htm
@@ -26,10 +29,12 @@ public class DragDropHandler {
 	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
 	private TreeView<File> treeView;
 	private ExceptionHandler exceptionHandler;
+	private PauseTransition pauseTransition;
 
 	public DragDropHandler(TreeView<File> treeView, ExceptionHandler exceptionHandler) {
 		this.treeView = treeView;
 		this.exceptionHandler = exceptionHandler;
+		pauseTransition = new PauseTransition(Duration.seconds(1));
 	}
 
 	public void handleDragDetected(MouseEvent event, FileTreeCell sourceTreeCell) {
@@ -65,11 +70,16 @@ public class DragDropHandler {
 		if (dropAllowed(sourceTreeItem, targetTreeItem)) {
 			targetTreeCell.setStyle(DROP_HINT_STYLE);
 		}
+		pauseTransition.setOnFinished((ActionEvent e) -> {
+			targetTreeItem.setExpanded(true);
+		});
+		pauseTransition.playFromStart();
 		event.consume();
 	}
 
 	public void handleOnDragExited(DragEvent event, FileTreeCell targetTreeCell) {
 		targetTreeCell.setStyle("");
+		pauseTransition.stop();
 		event.consume();
 	}
 
@@ -131,7 +141,8 @@ public class DragDropHandler {
 	 * - the source tree item and the target tree item are the same
 	 * - the source tree item is already child of the target tree item
 	 * - the target tree item is a leaf (and cannot contain children)
-	 * - the source tree item is ancestor of the target tree item and cannot be moved into its own descendant
+	 * - the source tree item is ancestor of the target tree item and cannot be
+	 * moved into its own descendant
 	 */
 	private boolean dropAllowed(FileTreeItem sourceTreeItem, FileTreeItem targetTreeItem) {
 		return sourceTreeItem != null
