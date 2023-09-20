@@ -1,7 +1,9 @@
 package net.treimers.filemanager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -13,6 +15,16 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -33,13 +45,16 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 	private boolean isFirstTimeLeaf = true;
 	private CompletableFuture<File[]> completableFuture;
 	private Timeline timeLine;
+	private ExceptionHandler exceptionHandler;
+	private int count;
 
-	public FileTreeItem(File file) {
+	public FileTreeItem(File file, ExceptionHandler exceptionHandler) {
 		super(file, new ImageView(file.isDirectory() ? FOLDER_ICON : FILE_ICON));
+		this.exceptionHandler = exceptionHandler;
 		expandedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				if (newValue != null && newValue.booleanValue()) {
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldEpxanded, Boolean newExpanded) {
+				if (newExpanded != null && newExpanded.booleanValue()) {
 					applyGraphic(HOURGLASS_ICON, true);
 					completableFuture = CompletableFuture.supplyAsync(FileTreeItem.this);
 					completableFuture.whenComplete(FileTreeItem.this);
@@ -103,7 +118,7 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 	@Override
 	public void accept(File[] files, Throwable throwable) {
 		if (throwable != null) {
-			throwable.printStackTrace();
+			exceptionHandler.showError(throwable);
 			resetFolderIcon();
 		} else {
 			try {
@@ -113,7 +128,7 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 				// create FileTreeItem container for all files (outside JavaFX thread)
 				FileTreeItem[] treeItems = new FileTreeItem[files.length];
 				for (int i = 0; i < files.length; i++)
-					treeItems[i] = new FileTreeItem(files[i]);
+					treeItems[i] = new FileTreeItem(files[i], exceptionHandler);
 				// add all children to this item (in JavaFX thread)
 				Platform.runLater(new Runnable() {
 					@Override
@@ -124,8 +139,8 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 
 				});
 			} catch (RuntimeException e) {
-				e.printStackTrace();
-				throw e;
+				exceptionHandler.showError(e);
+				resetFolderIcon();
 			}
 		}
 	}
@@ -135,7 +150,7 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 		FileTreeItem last = null;
 		boolean retval = false;
 		while (current != null && last != current) {
-			if (this.equals(current)) {
+			if (equals(current)) {
 				retval = true;
 				break;
 			}
@@ -143,6 +158,150 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 			current = (FileTreeItem) current.getParent();
 		}
 		return retval;
+	}
+
+	public ContextMenu createContextMenu() {
+		ContextMenu contextMenu = new ContextMenu();
+		ObservableList<MenuItem> menuItems = contextMenu.getItems();
+		if (getValue().isDirectory()) {
+			/*
+			 * Refresh Action
+			 */
+			MenuItem refresh = new MenuItem("Refresh");
+			menuItems.add(refresh);
+			// We simply close and reopen the folder tree item which will empty the children
+			// list.
+			// But only if it was already open before refresh.
+			refresh.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					if (isExpanded()) {
+						refresh();
+					}
+				}
+			});
+			/*
+			 * Separator
+			 */
+			SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
+			menuItems.add(separatorMenuItem);
+			/*
+			 * Create New File Action
+			 */
+			MenuItem newFile = new MenuItem("New File");
+			menuItems.add(newFile);
+			newFile.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					File dir = getValue();
+					if (!dir.isDirectory())
+						return;
+					TextInputDialog dialog = new TextInputDialog("file.txt");
+					dialog.setTitle("New File");
+					dialog.setHeaderText("Creating New File");
+					dialog.setContentText("Please enter name of new file:");
+					Optional<String> result = dialog.showAndWait();
+					if (!result.isPresent())
+						return;
+					File file = new File(dir, result.get());
+					try {
+						if (file.exists()) {
+							Alert error = new Alert(AlertType.WARNING);
+							error.setTitle("Warning");
+							error.setHeaderText("File exists: " + file.getName());
+							error.setContentText("Sorry, ignoring your request because file already exists!");
+							error.showAndWait();
+						} else {
+							file.createNewFile();
+							FileTreeItem newTreeItem = new FileTreeItem(file, exceptionHandler);
+							ObservableList<TreeItem<File>> children = getChildren();
+							children.add(newTreeItem);
+							children.sort(Util.COMPARATOR);
+						}
+						setExpanded(true);
+					} catch (IOException e) {
+						Alert error = new Alert(AlertType.ERROR);
+						error.setTitle("Error");
+						error.setHeaderText("Error creating File: " + file.getName());
+						error.setContentText("Sorry, failed to create file: " + e.getMessage());
+						error.showAndWait();
+					}
+				}
+			});
+			/*
+			 * Create New Directory Action
+			 */
+			MenuItem newDir = new MenuItem("New Directory");
+			menuItems.add(newDir);
+			newDir.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					File dir = getValue();
+					if (!dir.isDirectory())
+						return;
+					TextInputDialog dialog = new TextInputDialog("directory");
+					dialog.setTitle("New Directory");
+					dialog.setHeaderText("Creating New Directory");
+					dialog.setContentText("Please enter name of new directory:");
+					Optional<String> result = dialog.showAndWait();
+					if (!result.isPresent())
+						return;
+					File file = new File(dir, result.get());
+					if (file.exists()) {
+						Alert error = new Alert(AlertType.WARNING);
+						error.setTitle("Warning");
+						error.setHeaderText("Directory exists: " + file.getName());
+						error.setContentText("Sorry, ignoring your request because directory already exists!");
+						error.showAndWait();
+					} else {
+						boolean success = file.mkdir();
+						if (!success) {
+							Alert error = new Alert(AlertType.ERROR);
+							error.setTitle("Error");
+							error.setHeaderText("Error creating Directory: " + file.getName());
+							error.setContentText("Sorry, failed to create directory!");
+							error.showAndWait();
+						} else {
+							FileTreeItem newTreeItem = new FileTreeItem(file, exceptionHandler);
+							ObservableList<TreeItem<File>> children = getChildren();
+							children.add(newTreeItem);
+							children.sort(Util.COMPARATOR);
+						}
+					}
+					setExpanded(true);
+				}
+			});
+		}
+		/*
+		 * Delete File Action
+		 */
+		MenuItem deleteFile = new MenuItem("Delete");
+		menuItems.add(deleteFile);
+		deleteFile.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				File file = getValue();
+				Alert alert = new Alert(AlertType.CONFIRMATION);
+				alert.setTitle("Delete File");
+				alert.setHeaderText("Delete File: " + file.getName());
+				alert.setContentText("Are you sure?");
+				Optional<ButtonType> result = alert.showAndWait();
+				if (result.get() == ButtonType.OK) {
+					boolean delete = file.delete();
+					if (!delete) {
+						Alert error = new Alert(AlertType.ERROR);
+						error.setTitle("Error");
+						error.setHeaderText("Error deleting File: " + file.getName());
+						error.setContentText("Sorry, deletion failed! Maybe non-empty directory?");
+						error.showAndWait();
+					} else {
+						FileTreeItem parent = (FileTreeItem) getParent();
+						parent.getChildren().remove(FileTreeItem.this);
+					}
+				}
+			}
+		});
+		return contextMenu;
 	}
 
 	// private methods

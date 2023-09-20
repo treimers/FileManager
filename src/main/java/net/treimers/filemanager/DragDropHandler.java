@@ -25,9 +25,11 @@ public class DragDropHandler {
 	private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
 	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
 	private TreeView<File> treeView;
+	private ExceptionHandler exceptionHandler;
 
-	public DragDropHandler(TreeView<File> treeView) {
+	public DragDropHandler(TreeView<File> treeView, ExceptionHandler exceptionHandler) {
 		this.treeView = treeView;
+		this.exceptionHandler = exceptionHandler;
 	}
 
 	public void handleDragDetected(MouseEvent event, FileTreeCell sourceTreeCell) {
@@ -99,7 +101,7 @@ public class DragDropHandler {
 					// add item to target item, if target item is expanded
 					// otherwise expand target item
 					if (targetTreeItem.isExpanded()) {
-						FileTreeItem newTargetTreeItem = new FileTreeItem(newTargetFile);
+						FileTreeItem newTargetTreeItem = new FileTreeItem(newTargetFile, exceptionHandler);
 						ObservableList<TreeItem<File>> children = targetTreeItem.getChildren();
 						children.add(newTargetTreeItem);
 						children.sort(Util.COMPARATOR);
@@ -129,7 +131,7 @@ public class DragDropHandler {
 	 * - the source tree item and the target tree item are the same
 	 * - the source tree item is already child of the target tree item
 	 * - the target tree item is a leaf (and cannot contain children)
-	 * - the source tree item is ancestor of the target tree item
+	 * - the source tree item is ancestor of the target tree item and cannot be moved into its own descendant
 	 */
 	private boolean dropAllowed(FileTreeItem sourceTreeItem, FileTreeItem targetTreeItem) {
 		return sourceTreeItem != null
