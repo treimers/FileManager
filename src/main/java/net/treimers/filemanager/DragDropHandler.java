@@ -9,7 +9,6 @@ import java.nio.file.StandardCopyOption;
 import javafx.animation.PauseTransition;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -28,12 +27,12 @@ public class DragDropHandler {
 	private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
 	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
 	private TreeView<File> treeView;
-	private ExceptionHandler exceptionHandler;
+	private DialogHandler dialogHandler;
 	private PauseTransition pauseTransition;
 
-	public DragDropHandler(TreeView<File> treeView, ExceptionHandler exceptionHandler) {
+	public DragDropHandler(TreeView<File> treeView, DialogHandler dialogHandler) {
 		this.treeView = treeView;
-		this.exceptionHandler = exceptionHandler;
+		this.dialogHandler = dialogHandler;
 		pauseTransition = new PauseTransition(Duration.seconds(1));
 	}
 
@@ -97,11 +96,7 @@ public class DragDropHandler {
 				System.out.println("Moving " + sourceFile + " to directory " + targetDir);
 				File newTargetFile = new File(targetDir, sourceFile.getName());
 				if (newTargetFile.exists()) {
-					Alert error = new Alert(AlertType.ERROR);
-					error.setTitle("Error");
-					error.setHeaderText("Error moving File: " + sourceFile.getName());
-					error.setContentText("Sorry, file already exists in target");
-					error.showAndWait();
+					dialogHandler.showAlert(AlertType.ERROR, "Error", "Error moving File: " + sourceFile.getName(), "Sorry, file already exists in target");
 					success = false;
 				} else {
 					Files.move(sourceFile.toPath(), Paths.get(targetDir.getPath(), sourceFile.getName()),
@@ -111,7 +106,7 @@ public class DragDropHandler {
 					// add item to target item, if target item is expanded
 					// otherwise expand target item
 					if (targetTreeItem.isExpanded()) {
-						FileTreeItem newTargetTreeItem = new FileTreeItem(newTargetFile, exceptionHandler);
+						FileTreeItem newTargetTreeItem = new FileTreeItem(newTargetFile, dialogHandler);
 						ObservableList<TreeItem<File>> children = targetTreeItem.getChildren();
 						children.add(newTargetTreeItem);
 						children.sort(Util.COMPARATOR);
@@ -122,11 +117,7 @@ public class DragDropHandler {
 					}
 				}
 			} catch (IOException e) {
-				Alert error = new Alert(AlertType.ERROR);
-				error.setTitle("Error");
-				error.setHeaderText("Error moving File: " + sourceFile.getName());
-				error.setContentText("Sorry, failed to move file: " + e.getMessage());
-				error.showAndWait();
+				dialogHandler.showAlert(AlertType.ERROR, "Error", "Error moving File: " + sourceFile.getName(), "Sorry, failed to move file: " + e.getMessage());
 				success = false;
 			}
 		}

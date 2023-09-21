@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
@@ -16,6 +17,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.TableColumn;
@@ -31,7 +33,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-public class Controller implements Initializable, ExceptionHandler {
+public class Controller implements Initializable, DialogHandler {
 	@FXML
 	private MenuBar menuBar;
 	@FXML
@@ -77,11 +79,7 @@ public class Controller implements Initializable, ExceptionHandler {
 
 	@FXML
 	void handleAbout(ActionEvent event) {
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.setTitle("About");
-		alert.setHeaderText("About File Manager");
-		alert.setContentText("File Manager is used to demonstrate JavaFX TreeView and Drag-And-Drop!");
-		alert.showAndWait();
+		showAlert(AlertType.INFORMATION, "About", "About File Manager", "File Manager is used to demonstrate JavaFX TreeView and Drag-And-Drop!");
 	}
 
 	@FXML
@@ -103,6 +101,7 @@ public class Controller implements Initializable, ExceptionHandler {
 	public void showError(Throwable throwable) {
 		Platform.runLater(() -> {
 			Alert alert = new Alert(AlertType.ERROR);
+			alert.initOwner(primaryStage);
 			alert.setTitle("Error");
 			alert.setHeaderText("An error occured!");
 			alert.setContentText(throwable.getMessage());
@@ -131,5 +130,26 @@ public class Controller implements Initializable, ExceptionHandler {
 
 	public void setStage(Stage primaryStage) {
 		this.primaryStage = primaryStage;
+	}
+
+	@Override
+	public void showAlert(AlertType alertType, String title, String headerText, String contentText) {
+		Alert alert = new Alert(alertType);
+		alert.initOwner(primaryStage);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		alert.showAndWait();
+	}
+
+	@Override
+	public boolean showConfirmation(String title, String headerText, String contentText) {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.initOwner(primaryStage);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(contentText);
+		Optional<ButtonType> result = alert.showAndWait();
+		return result.get() == ButtonType.OK;
 	}
 }

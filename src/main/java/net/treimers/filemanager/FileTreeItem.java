@@ -45,15 +45,15 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 	private boolean isFirstTimeLeaf = true;
 	private CompletableFuture<File[]> completableFuture;
 	private Timeline timeLine;
-	private ExceptionHandler exceptionHandler;
-	private int count;
+	private DialogHandler dialogHandler;
 
-	public FileTreeItem(File file, ExceptionHandler exceptionHandler) {
+	public FileTreeItem(File file, DialogHandler dialogHandler) {
 		super(file, new ImageView(file.isDirectory() ? FOLDER_ICON : FILE_ICON));
-		this.exceptionHandler = exceptionHandler;
+		this.dialogHandler = dialogHandler;
 		expandedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldEpxanded, Boolean newExpanded) {
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldEpxanded,
+					Boolean newExpanded) {
 				if (newExpanded != null && newExpanded.booleanValue()) {
 					applyGraphic(HOURGLASS_ICON, true);
 					completableFuture = CompletableFuture.supplyAsync(FileTreeItem.this);
@@ -118,7 +118,7 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 	@Override
 	public void accept(File[] files, Throwable throwable) {
 		if (throwable != null) {
-			exceptionHandler.showError(throwable);
+			dialogHandler.showError(throwable);
 			resetFolderIcon();
 		} else {
 			try {
@@ -128,7 +128,7 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 				// create FileTreeItem container for all files (outside JavaFX thread)
 				FileTreeItem[] treeItems = new FileTreeItem[files.length];
 				for (int i = 0; i < files.length; i++)
-					treeItems[i] = new FileTreeItem(files[i], exceptionHandler);
+					treeItems[i] = new FileTreeItem(files[i], dialogHandler);
 				// add all children to this item (in JavaFX thread)
 				Platform.runLater(new Runnable() {
 					@Override
@@ -139,7 +139,7 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 
 				});
 			} catch (RuntimeException e) {
-				exceptionHandler.showError(e);
+				dialogHandler.showError(e);
 				resetFolderIcon();
 			}
 		}
@@ -206,25 +206,19 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 					File file = new File(dir, result.get());
 					try {
 						if (file.exists()) {
-							Alert error = new Alert(AlertType.WARNING);
-							error.setTitle("Warning");
-							error.setHeaderText("File exists: " + file.getName());
-							error.setContentText("Sorry, ignoring your request because file already exists!");
-							error.showAndWait();
+							dialogHandler.showAlert(AlertType.WARNING, "Warning", "File exists: " + file.getName(),
+									"Sorry, ignoring your request because file already exists!");
 						} else {
 							file.createNewFile();
-							FileTreeItem newTreeItem = new FileTreeItem(file, exceptionHandler);
+							FileTreeItem newTreeItem = new FileTreeItem(file, dialogHandler);
 							ObservableList<TreeItem<File>> children = getChildren();
 							children.add(newTreeItem);
 							children.sort(Util.COMPARATOR);
 						}
 						setExpanded(true);
 					} catch (IOException e) {
-						Alert error = new Alert(AlertType.ERROR);
-						error.setTitle("Error");
-						error.setHeaderText("Error creating File: " + file.getName());
-						error.setContentText("Sorry, failed to create file: " + e.getMessage());
-						error.showAndWait();
+						dialogHandler.showAlert(AlertType.ERROR, "Error", "Error creating File: " + file.getName(),
+								"Sorry, failed to create file: " + e.getMessage());
 					}
 				}
 			});
@@ -248,21 +242,16 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 						return;
 					File file = new File(dir, result.get());
 					if (file.exists()) {
-						Alert error = new Alert(AlertType.WARNING);
-						error.setTitle("Warning");
-						error.setHeaderText("Directory exists: " + file.getName());
-						error.setContentText("Sorry, ignoring your request because directory already exists!");
-						error.showAndWait();
+						dialogHandler.showAlert(AlertType.WARNING, "Warning", "Directory exists: " + file.getName(),
+								"Sorry, ignoring your request because directory already exists!");
 					} else {
 						boolean success = file.mkdir();
 						if (!success) {
-							Alert error = new Alert(AlertType.ERROR);
-							error.setTitle("Error");
-							error.setHeaderText("Error creating Directory: " + file.getName());
-							error.setContentText("Sorry, failed to create directory!");
-							error.showAndWait();
+							dialogHandler.showAlert(AlertType.ERROR, "Error",
+									"Error creating Directory: " + file.getName(),
+									"Sorry, failed to create directory!");
 						} else {
-							FileTreeItem newTreeItem = new FileTreeItem(file, exceptionHandler);
+							FileTreeItem newTreeItem = new FileTreeItem(file, dialogHandler);
 							ObservableList<TreeItem<File>> children = getChildren();
 							children.add(newTreeItem);
 							children.sort(Util.COMPARATOR);
@@ -281,19 +270,13 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 			@Override
 			public void handle(ActionEvent event) {
 				File file = getValue();
-				Alert alert = new Alert(AlertType.CONFIRMATION);
-				alert.setTitle("Delete File");
-				alert.setHeaderText("Delete File: " + file.getName());
-				alert.setContentText("Are you sure?");
-				Optional<ButtonType> result = alert.showAndWait();
-				if (result.get() == ButtonType.OK) {
+				boolean result = dialogHandler.showConfirmation("Delete File", "Delete File: " + file.getName(),
+						"Are you sure?");
+				if (result) {
 					boolean delete = file.delete();
 					if (!delete) {
-						Alert error = new Alert(AlertType.ERROR);
-						error.setTitle("Error");
-						error.setHeaderText("Error deleting File: " + file.getName());
-						error.setContentText("Sorry, deletion failed! Maybe non-empty directory?");
-						error.showAndWait();
+						dialogHandler.showAlert(AlertType.ERROR, "Error", "Error deleting File: " + file.getName(),
+								"Sorry, deletion failed! Maybe non-empty directory?");
 					} else {
 						FileTreeItem parent = (FileTreeItem) getParent();
 						parent.getChildren().remove(FileTreeItem.this);
