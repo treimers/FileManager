@@ -23,6 +23,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -79,7 +80,8 @@ public class Controller implements Initializable, DialogHandler {
 
 	@FXML
 	void handleAbout(ActionEvent event) {
-		showAlert(AlertType.INFORMATION, "About", "About File Manager", "File Manager is used to demonstrate JavaFX TreeView and Drag-And-Drop!");
+		showAlert(AlertType.INFORMATION, "About", "About File Manager",
+				"File Manager is used to demonstrate JavaFX TreeView and Drag-And-Drop!");
 	}
 
 	@FXML
@@ -98,6 +100,13 @@ public class Controller implements Initializable, DialogHandler {
 		}
 	}
 
+	public void setStage(Stage primaryStage) {
+		this.primaryStage = primaryStage;
+	}
+
+	// DialogHandler methods
+
+	@Override
 	public void showError(Throwable throwable) {
 		Platform.runLater(() -> {
 			Alert alert = new Alert(AlertType.ERROR);
@@ -128,10 +137,6 @@ public class Controller implements Initializable, DialogHandler {
 		});
 	}
 
-	public void setStage(Stage primaryStage) {
-		this.primaryStage = primaryStage;
-	}
-
 	@Override
 	public void showAlert(AlertType alertType, String title, String headerText, String contentText) {
 		Alert alert = new Alert(alertType);
@@ -151,5 +156,19 @@ public class Controller implements Initializable, DialogHandler {
 		alert.setContentText(contentText);
 		Optional<ButtonType> result = alert.showAndWait();
 		return result.get() == ButtonType.OK;
+	}
+
+	@Override
+	public String showTextInputDialog(String title, String headerText, String contentText, String defaultValue) {
+		TextInputDialog dialog = new TextInputDialog(defaultValue);
+		dialog.initOwner(primaryStage);
+		dialog.setTitle(title);
+		dialog.setHeaderText(headerText);
+		dialog.setContentText(contentText);
+		Optional<String> result = dialog.showAndWait();
+		if (!result.isPresent())
+			return null;
+		else
+			return result.get();
 	}
 }

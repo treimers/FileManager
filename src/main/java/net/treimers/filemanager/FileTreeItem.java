@@ -3,7 +3,6 @@ package net.treimers.filemanager;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -18,13 +17,10 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -196,14 +192,10 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 					File dir = getValue();
 					if (!dir.isDirectory())
 						return;
-					TextInputDialog dialog = new TextInputDialog("file.txt");
-					dialog.setTitle("New File");
-					dialog.setHeaderText("Creating New File");
-					dialog.setContentText("Please enter name of new file:");
-					Optional<String> result = dialog.showAndWait();
-					if (!result.isPresent())
+					String fileName = dialogHandler.showTextInputDialog("New File", "Creating New File", "Please enter name of new file:", "file.txt");
+					if (fileName == null)
 						return;
-					File file = new File(dir, result.get());
+					File file = new File(dir, fileName);
 					try {
 						if (file.exists()) {
 							dialogHandler.showAlert(AlertType.WARNING, "Warning", "File exists: " + file.getName(),
@@ -233,14 +225,10 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 					File dir = getValue();
 					if (!dir.isDirectory())
 						return;
-					TextInputDialog dialog = new TextInputDialog("directory");
-					dialog.setTitle("New Directory");
-					dialog.setHeaderText("Creating New Directory");
-					dialog.setContentText("Please enter name of new directory:");
-					Optional<String> result = dialog.showAndWait();
-					if (!result.isPresent())
+					String dirName = dialogHandler.showTextInputDialog("New Directory", "Creating New Directory", "Please enter name of new directory:", "directory");
+					if (dirName == null)
 						return;
-					File file = new File(dir, result.get());
+					File file = new File(dir, dirName);
 					if (file.exists()) {
 						dialogHandler.showAlert(AlertType.WARNING, "Warning", "Directory exists: " + file.getName(),
 								"Sorry, ignoring your request because directory already exists!");
