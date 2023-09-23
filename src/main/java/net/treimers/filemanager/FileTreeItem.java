@@ -26,23 +26,34 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
-// From Java Doc: https://docs.oracle.com/javafx/2/api/javafx/scene/control/TreeItem.html
+/**
+ * Instances of this class are used as tree items in the FileManager navigation.
+ * 
+ * Base on https://docs.oracle.com/javafx/2/api/javafx/scene/control/TreeItem.html
+ */
 public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, BiConsumer<File[], Throwable> {
-	// From https://icons8.com/icons/set
+	/** The folder icon image. */
 	private static final Image FOLDER_ICON = new Image(FileTreeItem.class.getResourceAsStream("folder.png"));
+	/** The file icon image. */
 	private static final Image FILE_ICON = new Image(FileTreeItem.class.getResourceAsStream("file.png"));
+	/** The hour glass icon image. */
 	private static final Image HOURGLASS_ICON = new Image(FileTreeItem.class.getResourceAsStream("hourglass.png"));
-	// We cache whether the File is a leaf (plain file) or not (directory).
-	// We cache this as isLeaf() is called often, and doing the actual check on File
-	// is expensive.
+	/** Cache flag for leaf (plain file) or not (directory). */
 	private boolean isLeaf;
-	// We do the leaf testing only once, and then set this boolean to false so that
-	// we do not check again during this run.
+	/** Indicator used to do leaf testing only once. */
 	private boolean isFirstTimeLeaf = true;
+	/** A completable future used for asynchronous loading. */
 	private CompletableFuture<File[]> completableFuture;
+	/** Time line used for animation. */
 	private Timeline timeLine;
+	/** A dialog handler used to show dialogs. */
 	private DialogHandler dialogHandler;
 
+	/**
+	 * Creates a new instance.
+	 * @param file the underlying file.
+	 * @param dialogHandler the dialog handler used to show dialogs.
+	 */
 	public FileTreeItem(File file, DialogHandler dialogHandler) {
 		super(file, new ImageView(file.isDirectory() ? FOLDER_ICON : FILE_ICON));
 		this.dialogHandler = dialogHandler;
@@ -75,6 +86,9 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 		return getValue().getName();
 	}
 
+	/**
+	 * Reloads this tree item.
+	 */
 	public void refresh() {
 		setExpanded(false);
 		setExpanded(true);
@@ -141,6 +155,11 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 		}
 	}
 
+	/**
+	 * Checks whether this FileTreeItem is an ancestor of another FileTreeItem.
+	 * @param other the other FileTreeItem.
+	 * @return true, if this FileTreeItem is an ancestor of other FileTreeItem, false otherwise.
+	 */
 	public boolean isAncestor(FileTreeItem other) {
 		FileTreeItem current = other;
 		FileTreeItem last = null;
@@ -156,6 +175,10 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 		return retval;
 	}
 
+	/**
+	 * Creates a context menu for this FileTreeItem.
+	 * @return a context menu for this FileTreeItem.
+	 */
 	public ContextMenu createContextMenu() {
 		ContextMenu contextMenu = new ContextMenu();
 		ObservableList<MenuItem> menuItems = contextMenu.getItems();
@@ -277,10 +300,19 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 
 	// private methods
 
+	/**
+	 * Sets the icon of this FileTreeItem.
+	 * @param image the icon of this FileTreeItem.
+	 */
 	private void applyGraphic(Image image) {
 		applyGraphic(image, false);
 	}
 
+	/**
+	 * Sets the icon of this FileTreeItem.
+	 * @param image the icon of this FileTreeItem.
+	 * @param animate true, if the icon should be animated.
+	 */
 	private void applyGraphic(Image image, boolean animate) {
 		ImageView icon = new ImageView(image);
 		setGraphic(icon);
@@ -293,6 +325,9 @@ public class FileTreeItem extends TreeItem<File> implements Supplier<File[]>, Bi
 		}
 	}
 
+	/**
+	 * Resets the folder icon to its default and stops the animation.
+	*/
 	private void resetFolderIcon() {
 		timeLine.stop();
 		applyGraphic(FOLDER_ICON);

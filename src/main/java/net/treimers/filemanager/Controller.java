@@ -33,7 +33,9 @@ import javafx.scene.layout.Priority;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-
+/**
+ * Controller of FileManager application.
+ */
 public class Controller implements Initializable, DialogHandler {
 	@FXML
 	private MenuBar menuBar;

@@ -9,6 +9,9 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+/**
+ * Main class of FileManager application.
+ */
 public class FileManager extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {

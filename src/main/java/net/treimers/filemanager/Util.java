@@ -6,6 +6,7 @@ import java.util.Comparator;
 import javafx.scene.control.TreeItem;
 
 public class Util {
+	/** A tree item comparator used to sort items in a tree. */
 	public static final Comparator<? super TreeItem<File>> COMPARATOR = new Comparator<>() {
 		@Override
 		public int compare(TreeItem<File> o1, TreeItem<File> o2) {

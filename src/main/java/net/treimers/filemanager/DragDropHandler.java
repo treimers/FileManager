@@ -20,22 +20,42 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.util.Duration;
 
-// https://docs.oracle.com/javase/8/javafx/api/index.html?javafx/scene/control/package-summary.html
-// https://docs.oracle.com/javafx/2/drag_drop/jfxpub-drag_drop.htm
-// https://brianyoung.blog/2018/08/23/javafx-treeview-drag-drop/
+/**
+ * A DragDropHandler instance is used to register for drag and drop operations.
+ * 
+ * Links:
+ * https://docs.oracle.com/javase/8/javafx/api/index.html?javafx/scene/control/package-summary.html
+ * https://docs.oracle.com/javafx/2/drag_drop/jfxpub-drag_drop.htm
+ * https://brianyoung.blog/2018/08/23/javafx-treeview-drag-drop/
+ */
 public class DragDropHandler {
+	/** The data format stored in the drag board. */
 	private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
+	/** The style used to mark drop allowed. */
 	private static final String DROP_HINT_STYLE = "-fx-border-color: #3399ff; -fx-border-width: 2 2 2 2; -fx-padding: 3 3 1 3";
+	/** The tree view of this drag and drop handler. */
 	private TreeView<File> treeView;
+	/** A dialog handler used to show dialogs. */
 	private DialogHandler dialogHandler;
+	/** A pause transistion used to open folders after a while. */
 	private PauseTransition pauseTransition;
 
+	/**
+	 * Creates a new instance.
+	 * @param treeView the tree view of this drag and drop handler.
+	 * @param dialogHandler the dialog handler used to show dialogs.
+	 */
 	public DragDropHandler(TreeView<File> treeView, DialogHandler dialogHandler) {
 		this.treeView = treeView;
 		this.dialogHandler = dialogHandler;
 		pauseTransition = new PauseTransition(Duration.seconds(1));
 	}
 
+	/**
+	 * Called when a drag operation is detected.
+	 * @param event the mouse event.
+	 * @param sourceTreeCell the source of the drag operation.
+	 */
 	public void handleDragDetected(MouseEvent event, FileTreeCell sourceTreeCell) {
 		FileTreeItem sourceTreeItem = (FileTreeItem) sourceTreeCell.getTreeItem();
 		// Do not allow moving root
@@ -49,6 +69,11 @@ public class DragDropHandler {
 		event.consume();
 	}
 
+	/**
+	 * Called when a drag over is detected.
+	 * @param event the mouse event.
+	 * @param targetTreeCell the target of the drag operation.
+	 */
 	public void handleDragOver(DragEvent event, FileTreeCell targetTreeCell) {
 		if (!event.getDragboard().hasContent(JAVA_FORMAT))
 			return;
@@ -60,6 +85,11 @@ public class DragDropHandler {
 		event.consume();
 	}
 
+	/**
+	 * Called when a drag entered is detected.
+	 * @param event the mouse event.
+	 * @param targetTreeCell the target of the drag entered operation.
+	 */
 	public void handleOnDragEntered(DragEvent event, FileTreeCell targetTreeCell) {
 		if (!event.getDragboard().hasContent(JAVA_FORMAT))
 			return;
@@ -76,12 +106,22 @@ public class DragDropHandler {
 		event.consume();
 	}
 
+	/**
+	 * Called when a drag entered is detected.
+	 * @param event the mouse event.
+	 * @param targetTreeCell the target of the drag exited operation.
+	 */
 	public void handleOnDragExited(DragEvent event, FileTreeCell targetTreeCell) {
 		targetTreeCell.setStyle("");
 		pauseTransition.stop();
 		event.consume();
 	}
 
+	/**
+	 * Called when a drag dropped is detected.
+	 * @param event the drag event.
+	 * @param targetTreeCell the target of the drag dropped operation.
+	 */
 	public void handleDragDropped(DragEvent event, FileTreeCell targetTreeCell) {
 		Dragboard db = event.getDragboard();
 		FileTreeCell sourceTreeCell = (FileTreeCell) event.getGestureSource();
@@ -126,14 +166,18 @@ public class DragDropHandler {
 	}
 
 	/**
+	 * Calculates whether a drop is allowed.
+	 * 
 	 * The following situations will be rejected:
 	 * - the source tree item is null
 	 * - the target tree item is null
 	 * - the source tree item and the target tree item are the same
 	 * - the source tree item is already child of the target tree item
 	 * - the target tree item is a leaf (and cannot contain children)
-	 * - the source tree item is ancestor of the target tree item and cannot be
-	 * moved into its own descendant
+	 * - the source tree item is ancestor of the target tree item and cannot be moved into its own descendant
+	  * @param sourceTreeItem the source tree item.
+	  * @param targetTreeItem the target tree item.
+	  * @return true if source tree item can be dropped into target tree item, false otherwise.
 	 */
 	private boolean dropAllowed(FileTreeItem sourceTreeItem, FileTreeItem targetTreeItem) {
 		return sourceTreeItem != null

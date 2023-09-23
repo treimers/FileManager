@@ -2,6 +2,9 @@ package net.treimers.filemanager;
 
 import javafx.scene.control.Alert.AlertType;
 
+/**
+ * The dialog handler interface provides some methods used to open different dialogs.
+ */
 public interface DialogHandler {
 	/**
 	 * Shows an exception / error dialog.

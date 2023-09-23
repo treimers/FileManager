@@ -6,7 +6,14 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 
+/**
+ * Instances of this class are used to render tree items.
+ */
 public class FileTreeCell extends TreeCell<File> {
+	/**
+	 * Creates a new instance.
+	 * @param dragHandler the handler this tree cell should notify on drag and drop operations.
+	 */
 	public FileTreeCell(DragDropHandler dragHandler) {
 		setOnDragDetected((MouseEvent event) -> dragHandler.handleDragDetected(event, this));
 		setOnDragOver((DragEvent event) -> dragHandler.handleDragOver(event, this));
