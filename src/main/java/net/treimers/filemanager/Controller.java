@@ -37,12 +37,17 @@ import javafx.util.Callback;
  * Controller of FileManager application.
  */
 public class Controller implements Initializable, DialogHandler {
+	/** The table view on the right side. */
 	@FXML
 	private TableView<FileInfo> tableView;
+	/** The tree view on the left side. */
 	@FXML
 	private TreeView<File> treeView;
+	/** The root item of the tree view. */
 	private FileTreeItem root;
+	/** The primary stage. */
 	private Stage primaryStage;
+	/** The drag and drop handler. */
 	private DragDropHandler dragHandler;
 
 	@Override
@@ -99,6 +104,10 @@ public class Controller implements Initializable, DialogHandler {
 		}
 	}
 
+	/**
+	 * Sets the primary stage used as dialog owner.
+	 * @param primaryStage the primary stage.
+	 */
 	public void setStage(Stage primaryStage) {
 		this.primaryStage = primaryStage;
 	}

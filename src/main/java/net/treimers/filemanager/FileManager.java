@@ -34,6 +34,10 @@ public class FileManager extends Application {
 		primaryStage.show();
 	}
 
+	/**
+	 * Starts the JavaFX app.
+	 * @param args the command line arguments.
+	 */
 	public static void run(String[] args) {
 		launch(args);
 	}
