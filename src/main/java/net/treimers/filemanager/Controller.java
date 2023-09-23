@@ -38,8 +38,6 @@ import javafx.util.Callback;
  */
 public class Controller implements Initializable, DialogHandler {
 	@FXML
-	private MenuBar menuBar;
-	@FXML
 	private TableView<FileInfo> tableView;
 	@FXML
 	private TreeView<File> treeView;
@@ -49,7 +47,6 @@ public class Controller implements Initializable, DialogHandler {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		menuBar.setUseSystemMenuBar(true);
 		dragHandler = new DragDropHandler(treeView, this);
 		TableColumn<FileInfo, String> name = new TableColumn<>("Name");
 		name.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("name"));
