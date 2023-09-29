@@ -10,8 +10,9 @@ on:
 
 jobs:
   build-macosx:
-    permissions: write-all
-    runs-on: macos-10.15
+  permissions:
+    contents: write
+  runs-on: macos-10.15
 
     steps:
     - uses: actions/checkout@v2
@@ -29,7 +30,8 @@ jobs:
         allowUpdates: true
 
   build-ubuntu:
-    permissions: write-all
+    permissions:
+      contents: write
     runs-on: [ubuntu-latest]
 
     steps:
@@ -48,7 +50,8 @@ jobs:
         allowUpdates: true
 
   build-windows:
-    permissions: write-all
+    permissions:
+      contents: write
     runs-on: [windows-latest]
 
     steps:
