@@ -5,7 +5,7 @@
 	<groupId>net.treimers.filemanager</groupId>
 	<artifactId>filemanager</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.1</version>
 	<name>FileManager</name>
 	<organization>
 		<name>Thorsten Reimers</name>
@@ -46,7 +46,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>${name}-${version}</finalName>
+		<finalName>${name}</finalName>
 		<extensions>
 			<!-- os maven plugin, generates the property os.detected.name with value "windows",
 			"osx" or "linux" -->
