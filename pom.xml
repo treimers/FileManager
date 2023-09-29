@@ -82,6 +82,7 @@
 							<administratorRequired>false</administratorRequired>
 							<platform>auto</platform>
 							<assetsDir>src/main/deploy/package</assetsDir>
+							<createZipball>true</createZipball>
 							<organizationName>${project.organization.name}</organizationName>
 							<outputDirectory>${project.build.directory}/deploy/${os.detected.name}</outputDirectory>
 							<customizedJre>false</customizedJre>
