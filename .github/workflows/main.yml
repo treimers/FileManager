@@ -1,0 +1,67 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Build Native Application
+
+on: 
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  build-macosx:
+
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 15
+      uses: actions/setup-java@v2
+      with:
+        java-version: '15'
+        distribution: 'adopt'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "target/deploy/osx/FileManager*.dmg,target/deploy/osx/FileManager*-mac.zip,target/deploy/osx/FileManager*.pkg"
+        allowUpdates: true
+
+  build-ubuntu:
+
+    runs-on: [ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 15
+      uses: actions/setup-java@v2
+      with:
+        java-version: '15'
+        distribution: 'adopt'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "target/deploy/linux/FileManager*.deb,target/deploy/linux/FileManager*.rpm,target/deploy/linux/FileManager-*-linux.zip"
+        allowUpdates: true
+
+  build-windows:
+
+    runs-on: [windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 15
+      uses: actions/setup-java@v2
+      with:
+        java-version: '15'
+        distribution: 'adopt'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "target/deploy/windows/FileManager*.exe,target/deploy/windows/FileManager-*-windows.zip"
+        allowUpdates: true
